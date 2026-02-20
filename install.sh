@@ -4,13 +4,13 @@ set -e
 
 REPO="https://raw.githubusercontent.com/blemli/recollfox/main"
 INSTALL_DIR="$HOME/.local/share/recollfox"
-SCRIPT="$INSTALL_DIR/recollfox.sh"
+SCRIPT="$INSTALL_DIR/recollfox.py"
 
 echo "Installing recollfox..."
 
 # Download export script
 mkdir -p "$INSTALL_DIR"
-curl -fsSL "$REPO/recollfox.sh" -o "$SCRIPT"
+curl -fsSL "$REPO/recollfox.py" -o "$SCRIPT"
 chmod +x "$SCRIPT"
 
 # Enable Recoll web queue indexing

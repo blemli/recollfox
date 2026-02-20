@@ -3,7 +3,7 @@
 Runs from cron every minute; only exports new entries since last run.
 """
 
-import glob
+import configparser
 import hashlib
 import html
 import os
@@ -12,32 +12,49 @@ import sys
 
 RECOLL_WEBQUEUE = os.environ.get("RECOLL_WEBQUEUE", os.path.expanduser("~/.recollweb/ToIndex"))
 STATE_FILE = os.path.expanduser("~/.local/share/recollfox/last_visit_date")
-FIREFOX_PROFILE_DIRS = [
-    os.path.expanduser("~/Library/Application Support/Firefox/Profiles"),  # macOS
+FIREFOX_DIRS = [
+    os.path.expanduser("~/Library/Application Support/Firefox"),  # macOS
     os.path.expanduser("~/.mozilla/firefox"),  # Linux
     os.path.expanduser("~/snap/firefox/common/.mozilla/firefox"),  # Ubuntu snap
     os.path.expanduser("~/.var/app/org.mozilla.firefox/.mozilla/firefox"),  # Flatpak
 ]
 
 
-def find_active_profile():
-    """Find the Firefox profile with the most recent visit."""
-    best_db, best_ts = None, 0
-    for profile_dir in FIREFOX_PROFILE_DIRS:
-        for db in glob.glob(os.path.join(profile_dir, "*/places.sqlite")):
-            try:
-                conn = sqlite3.connect(f"file:{db}?immutable=1", uri=True)
-                ts = conn.execute("SELECT COALESCE(MAX(last_visit_date),0) FROM moz_places").fetchone()[0]
-                conn.close()
-                if ts > best_ts:
-                    best_ts, best_db = ts, db
-            except sqlite3.Error:
-                continue
-    return best_db
+def find_default_profile():
+    """Find Firefox's default profile by parsing profiles.ini."""
+    for firefox_dir in FIREFOX_DIRS:
+        ini_path = os.path.join(firefox_dir, "profiles.ini")
+        if not os.path.isfile(ini_path):
+            continue
+
+        cfg = configparser.ConfigParser()
+        cfg.read(ini_path)
+
+        # Install* sections have the actively used default profile
+        for section in cfg.sections():
+            if section.startswith("Install") and cfg.has_option(section, "Default"):
+                path = cfg.get(section, "Default")
+                if not os.path.isabs(path):
+                    path = os.path.join(firefox_dir, path)
+                db = os.path.join(path, "places.sqlite")
+                if os.path.isfile(db):
+                    return db
+
+        # Fallback: look for a Profile section with Default=1
+        for section in cfg.sections():
+            if section.startswith("Profile") and cfg.get(section, "Default", fallback="") == "1":
+                path = cfg.get(section, "Path")
+                if not os.path.isabs(path):
+                    path = os.path.join(firefox_dir, path)
+                db = os.path.join(path, "places.sqlite")
+                if os.path.isfile(db):
+                    return db
+
+    return None
 
 
 def main():
-    places_db = find_active_profile()
+    places_db = find_default_profile()
     if not places_db:
         print("No Firefox profile found", file=sys.stderr)
         sys.exit(1)
