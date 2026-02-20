@@ -28,6 +28,6 @@ This downloads the export script, enables Recoll's web queue indexing, sets up a
 ## Uninstall
 
 ```bash
-crontab -l | grep -v firefox-history-export | crontab -
-rm -rf ~/.local/share/firefox-recoll
+crontab -l | grep -v recollfox | crontab -
+rm -rf ~/.local/share/recollfox
 ```

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export Firefox browsing history for Recoll web indexing.
+"""recollfox — Export Firefox browsing history for Recoll web indexing.
 Runs from cron every minute; only exports new entries since last run.
 """
 
@@ -11,7 +11,7 @@ import sqlite3
 import sys
 
 RECOLL_WEBQUEUE = os.environ.get("RECOLL_WEBQUEUE", os.path.expanduser("~/.recollweb/ToIndex"))
-STATE_FILE = os.path.expanduser("~/.local/share/firefox-recoll/last_visit_date")
+STATE_FILE = os.path.expanduser("~/.local/share/recollfox/last_visit_date")
 FIREFOX_PROFILE_DIR = os.path.expanduser("~/Library/Application Support/Firefox/Profiles")
 
 
