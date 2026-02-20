@@ -12,21 +12,27 @@ import sys
 
 RECOLL_WEBQUEUE = os.environ.get("RECOLL_WEBQUEUE", os.path.expanduser("~/.recollweb/ToIndex"))
 STATE_FILE = os.path.expanduser("~/.local/share/recollfox/last_visit_date")
-FIREFOX_PROFILE_DIR = os.path.expanduser("~/Library/Application Support/Firefox/Profiles")
+FIREFOX_PROFILE_DIRS = [
+    os.path.expanduser("~/Library/Application Support/Firefox/Profiles"),  # macOS
+    os.path.expanduser("~/.mozilla/firefox"),  # Linux
+    os.path.expanduser("~/snap/firefox/common/.mozilla/firefox"),  # Ubuntu snap
+    os.path.expanduser("~/.var/app/org.mozilla.firefox/.mozilla/firefox"),  # Flatpak
+]
 
 
 def find_active_profile():
     """Find the Firefox profile with the most recent visit."""
     best_db, best_ts = None, 0
-    for db in glob.glob(os.path.join(FIREFOX_PROFILE_DIR, "*/places.sqlite")):
-        try:
-            conn = sqlite3.connect(f"file:{db}?immutable=1", uri=True)
-            ts = conn.execute("SELECT COALESCE(MAX(last_visit_date),0) FROM moz_places").fetchone()[0]
-            conn.close()
-            if ts > best_ts:
-                best_ts, best_db = ts, db
-        except sqlite3.Error:
-            continue
+    for profile_dir in FIREFOX_PROFILE_DIRS:
+        for db in glob.glob(os.path.join(profile_dir, "*/places.sqlite")):
+            try:
+                conn = sqlite3.connect(f"file:{db}?immutable=1", uri=True)
+                ts = conn.execute("SELECT COALESCE(MAX(last_visit_date),0) FROM moz_places").fetchone()[0]
+                conn.close()
+                if ts > best_ts:
+                    best_ts, best_db = ts, db
+            except sqlite3.Error:
+                continue
     return best_db
 
 
