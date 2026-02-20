@@ -17,6 +17,7 @@ FIREFOX_DIRS = [
     os.path.expanduser("~/.mozilla/firefox"),  # Linux
     os.path.expanduser("~/snap/firefox/common/.mozilla/firefox"),  # Ubuntu snap
     os.path.expanduser("~/.var/app/org.mozilla.firefox/.mozilla/firefox"),  # Flatpak
+    os.path.expanduser("~/.var/app/org.mozilla.firefox/config/mozilla/firefox"),  # Flatpak
 ]
 
 
