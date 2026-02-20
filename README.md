@@ -2,6 +2,10 @@
 
 Export Firefox browsing history for [Recoll](https://www.recoll.org/) to index.
 
+<img src="recollfox.svg" style="zoom:25%;" />
+
+
+
 A cron job runs every minute, exporting new history entries into Recoll's web queue format. Recoll indexes them on its next run.
 
 ## Install
