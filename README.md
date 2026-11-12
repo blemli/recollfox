@@ -21,8 +21,11 @@ This downloads the export script, enables Recoll's web queue indexing, sets up a
 - Reads Firefox's `places.sqlite` (read-only, safe while Firefox is running)
 - Exports each visited URL as a pair of files in `~/.recollweb/ToIndex/`:
   - `_<hash>` — metadata (URL, title, type)
-  - `<hash>` — minimal HTML with title and description
-- Tracks the last exported timestamp to only process new entries
+  - `<hash>` — HTML with title, description and the page's visible text
+- Fetches each page itself (plain HTTP, no JavaScript), so content is not identical to what Firefox shows
+  - At most 20 pages per run (`RECOLLFOX_FETCH_MAX`), 5 s timeout, 512 KB per page
+  - Skips localhost and private/internal addresses; failed fetches fall back to title and description
+- Tracks the last exported timestamp to only process new entries; a run that hits the fetch cap resumes on the next run
 - Recoll picks up the queue files on its next indexing run
 
 ## Uninstall
